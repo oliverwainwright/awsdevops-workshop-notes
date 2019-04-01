@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: DevDockerfile
+    volumes:
+      - ./api:/usr/src/api
+    ports:
+      # machine:container
+      - 3001:3000
+    command: /bin/sh -c "yarn start"
+    env_file:
+      - ./env/dev.env
+
+  devdb:
+    image: mysql:5.7
+    # keeps db data local and easy to reset
+    volumes:
+      - ./devdb:/var/lib/mysql
+      # conf.d is a folder, and it reads whatever `.cnf` files are in there
+      - ./env:/etc/mysql/conf.d
+    ports:
+      - 3306:3306
+    env_file:
+      - ./env/dev.env
+    
+  web:
+    build:
+      context: ./images
+      dockerfile: WebDevDockerfile
+    # REMOVE :cached IF NOT ON MAC OS
+    volumes:
+      - ./web:/usr/src/web
+    ports:
+      - 3002:3000
+    env_file:
+      - ./env/webdev.env
+    command: /bin/sh -c "yarn && yarn start"
